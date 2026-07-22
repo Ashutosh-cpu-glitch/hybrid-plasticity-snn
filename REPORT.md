@@ -28,7 +28,7 @@ by a learned gate:
   `output = α · fast_output + (1-α) · slow_output`.
 
 ![Gate Evolution](figures/fig4_gate_evolution.png)
-- **Episodic replay buffer** - after each task, 20 exemplars are stored. While training on later tasks, these exemplars are periodically replayed through the fast pathway only (not the slow pathway), analogous to hippocampal replay protecting old associations.
+- **Episodic replay buffer** - after each task, 20 exemplars are stored. While training on later tasks, these exemplars are periodically replayed through the fast pathway only (not the slow pathway) analogous to hippocampal replay protecting old associations.
 
 ![Replay Mechanism](figures/fig7_replay_mechanism.png)
 
