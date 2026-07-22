@@ -22,14 +22,9 @@ in an SNN trained mainly by backpropagation?**
 The model, `HybridSNN`, has two parallel pathways whose outputs are combined
 by a learned gate:
 
-- **Slow pathway** — two layers of Leaky Integrate-and-Fire (LIF) neurons,
-  trained end-to-end via backpropagation using a surrogate gradient (fast
-  sigmoid) to handle the non-differentiability of spikes. This is the
-  standard deep-learning component.
-- **Fast pathway** — a single linear projection from input to output,
-  updated **only** by a local, biologically-plausible learning rule (no
-  backpropagation, no gradient through time). This represents the
-  plasticity component.
+- **Slow pathway** — consists of two layers of Leaky Integrate-and-Fire (LIF) neurons trained end-to-end using backpropagation-through-time (BPTT) with surrogate gradients (fast sigmoid). This pathway performs the main task learning and serves as the standard gradient-based component of the network.
+- 
+- **Fast pathway** — a single linear projection from input to output, updated **only** by a local, biologically-plausible learning rule (no backpropagation, no gradient through time). This represents the plasticity component.
 - **Gate** (α, a learned scalar) — combines the two pathways:
   `output = α · fast_output + (1-α) · slow_output`.
 
