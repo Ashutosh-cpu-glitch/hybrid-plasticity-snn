@@ -46,7 +46,7 @@ A pure-backprop `BaselineSNN` (slow pathway only, no plasticity, no replay) is u
 
 ## 4. Development / Debugging Journey
 
-This project went through several iterations each motivated by diagnosing *why* the fast pathway was not helping. This iterative process is itself a core part of the research contribution.
+This project went through several iterations, each motivated by diagnosing *why* the fast pathway was not helping. This iterative process is itself a core part of the research contribution.
 
 | Iteration | Fast-pathway design | Baseline forgetting | Hybrid forgetting | Outcome |
 |---|---|---|---|---|
@@ -76,7 +76,7 @@ To ensure statistical reliability, each variant was run across 5 random seeds in
 
 - The baseline is extremely consistent (std = 0.0003). It reliably suffers near-total catastrophic forgetting across all seeds. This makes it a reliable reference point.
 
-- All hybrid variants substantially and consistently outperform the baseline (roughly 0.99 to 0.51-0.61 forgetting), confirming that the fast plasticity pathway significantlly reduces catastrophic forgetting.
+- All hybrid variants substantially and consistently outperform the baseline (roughly 0.99 to 0.51-0.61 forgetting), confirming that the fast plasticity pathway significantly reduces catastrophic forgetting.
 - Replay helps: removing replay increases forgetting from 0.549 to 0.614.
 - Unexpected ablation finding: removing the learned gate (fixing the fast/slow combination at a static 50/50 average) performs statistically indistinguishable from the full model with a learned gate (0.514 vs 0.549). The current scalar gate does not provide a clear performance advantage. This suggests that a simple global gate is not expressive enough to learn an effective combination policy from the available data, making a more flexible gating mechanism an important direction for future work. It also helps identify which components are responsible for the observed improvement.
 - Variance across random seeds is notably higher for the hybrid variants (std up to 0.17) than for the baseline. The average improvement is consistent across experiments. Additional tuning is needed to improve stability across different random initialisations and make the model more reliable.
