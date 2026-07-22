@@ -12,7 +12,7 @@ Spiking Neural Networks trained purely by backpropagation-through-time
 suffer from catastrophic forgetting when trained sequentially on new
 tasks. This project investigates whether a small, locally-trained "fast"
 synaptic pathway, combined with lightweight episodic replay, can reduce
-this forgetting — inspired by Complementary Learning Systems theory
+this forgetting, inspired by Complementary Learning Systems theory
 (McClelland et al., 1995), in which the hippocampus learns quickly via
 local plasticity while the cortex consolidates knowledge slowly.
 
