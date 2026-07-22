@@ -7,7 +7,7 @@
 
 ## 1. Motivation
 
-Spiking Neural Networks (SNNs) trained purely with backpropagation-through-time (BPTT) via surrogate gradients suffer from catastrophic forgetting when trained sequentially on new tasks, they lose almost all performance on previously learned tasks. This mirrors the classic stability-plasticity dilemma in neuroscience.
+Spiking Neural Networks (SNNs) trained purely with backpropagation-through-time (BPTT) via surrogate gradients often suffer from catastrophic forgetting when trained sequentially on new tasks. This causes a significant loss of performance on tasks learned earlier reflecting the classic stability-plasticity dilemma in neuroscience.
 
 Biological brains avoid this through Complementary Learning Systems (McClelland et al., 1995). The hippocampus learns new information quickly via fast, local, activity-dependent synaptic plasticity, while the cortex consolidates knowledge slowly. Hippocampal replay of past experiences (observed during rest and sleep) is believed to protect old memories from being overwritten during new learning.
 
@@ -22,22 +22,17 @@ in an SNN trained mainly by backpropagation?**
 The model, `HybridSNN`, has two parallel pathways whose outputs are combined
 by a learned gate:
 
-- **Slow pathway** — consists of two layers of Leaky Integrate-and-Fire (LIF) neurons trained end-to-end using backpropagation-through-time (BPTT) with surrogate gradients (fast sigmoid). This pathway performs the main task learning and serves as the standard gradient-based component of the network.
-- 
-- **Fast pathway** — a single linear projection from input to output, updated **only** by a local, biologically-plausible learning rule (no backpropagation, no gradient through time). This represents the plasticity component.
-- **Gate** (α, a learned scalar) — combines the two pathways:
+- **Slow pathway** - consists of two layers of Leaky Integrate-and-Fire (LIF) neurons trained end-to-end using backpropagation-through-time (BPTT) with surrogate gradients (fast sigmoid). This pathway performs the main task learning and serves as the standard gradient-based component of the network.
+- **Fast pathway** - a single linear projection from input to output, updated **only** by a local, biologically-plausible learning rule (no backpropagation, no gradient through time). This represents the plasticity component.
+- **Gate** (α, a learned scalar) - combines the two pathways:
   `output = α · fast_output + (1-α) · slow_output`.
 
 ![Gate Evolution](figures/fig4_gate_evolution.png)
-- **Episodic replay buffer** — after each task, 20 exemplars are stored.
-  While training on later tasks, these exemplars are periodically replayed
-  through the fast pathway only (not the slow pathway), analogous to
-  hippocampal replay protecting old associations.
+- **Episodic replay buffer** — after each task, 20 exemplars are stored. While training on later tasks, these exemplars are periodically replayed through the fast pathway only (not the slow pathway), analogous to hippocampal replay protecting old associations.
 
 ![Replay Mechanism](figures/fig7_replay_mechanism.png)
 
-A pure-backprop `BaselineSNN` (slow pathway only, no plasticity, no replay)
-is used as the control condition.
+A pure-backprop `BaselineSNN` (slow pathway only, no plasticity, no replay) is used as the control condition.
 
 ## 3. Experimental Setup
 
