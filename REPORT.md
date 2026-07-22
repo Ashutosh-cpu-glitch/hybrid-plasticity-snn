@@ -46,7 +46,7 @@ A pure-backprop `BaselineSNN` (slow pathway only, no plasticity, no replay) is u
 
 ## 4. Development / Debugging Journey
 
-This project went through several iterations, each motivated by diagnosing *why* the fast pathway was not helping. This iterative process is itself a core part of the research contribution.
+This project went through several iterations each motivated by diagnosing *why* the fast pathway was not helping. This iterative process is itself a core part of the research contribution.
 
 | Iteration | Fast-pathway design | Baseline forgetting | Hybrid forgetting | Outcome |
 |---|---|---|---|---|
