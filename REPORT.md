@@ -55,13 +55,13 @@ This project went through several iterations each motivated by diagnosing *why* 
 | 3 | Delta-rule error signal, but readout based on a self-referential spike threshold | 0.9960 | 0.9949 | No benefit - the threshold shifted as weights changed, destabilising learning |
 | 4 | Delta-rule (Widrow-Hoff) on rate-coded (continuous) activity + episodic replay | 0.9952 | **0.7002** | **Significant reduction in forgetting** |
 
-Each failed iteration was diagnosed using an isolated-pathway evaluation (measuring the fast pathway's and slow pathway's accuracy separately) before being fixed. For example, diagnostic evaluation on Iteration 3 showed the fast pathway achieved only 46% accuracy on Task 1 and 0% on the task it had *just* been trained on, revealing the readout instability rather than a forgetting problem per se.
+Each failed iteration was diagnosed using an isolated-pathway evaluation (measuring the fast pathway's and slow pathway's accuracy separately) before being fixed. For example, diagnostic evaluation on Iteration 3 showed the fast pathway achieved only 46% accuracy on Task 1 and 0% on the task it had *just* been trained on, revealing the readout instability instead of a forgetting problem per se.
 
 ## 5. Final Results
 
 ### 5.1 Multi-seed Ablation Study (5 random seeds, mean ± std)
 
-To ensure statistical reliability, each variant was run across 5 random seeds rather than relying on a single run.
+To ensure statistical reliability, each variant was run across 5 random seeds instead of relying on a single run.
 
 | Variant | Average Forgetting | BWT |
 |---|---|---|
