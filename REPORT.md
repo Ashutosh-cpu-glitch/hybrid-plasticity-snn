@@ -7,18 +7,9 @@
 
 ## 1. Motivation
 
-Spiking Neural Networks (SNNs) trained purely with backpropagation-through-time
-(BPTT) via surrogate gradients suffer from **catastrophic forgetting**: when
-trained sequentially on new tasks, they lose almost all performance on
-previously learned tasks. This mirrors the classic stability-plasticity
-dilemma in neuroscience.
+Spiking Neural Networks (SNNs) trained purely with backpropagation-through-time (BPTT) via surrogate gradients suffer from catastrophic forgetting when trained sequentially on new tasks, they lose almost all performance on previously learned tasks. This mirrors the classic stability-plasticity dilemma in neuroscience.
 
-Biological brains avoid this through **Complementary Learning Systems**
-(McClelland et al., 1995): the hippocampus learns new information quickly
-via fast, local, activity-dependent synaptic plasticity, while the cortex
-consolidates knowledge slowly. Hippocampal **replay** of past experiences
-(observed during rest and sleep) is believed to protect old memories from
-being overwritten during new learning.
+Biological brains avoid this through Complementary Learning Systems (McClelland et al., 1995). The hippocampus learns new information quickly via fast, local, activity-dependent synaptic plasticity, while the cortex consolidates knowledge slowly. Hippocampal replay of past experiences (observed during rest and sleep) is believed to protect old memories from being overwritten during new learning.
 
 This project asks: **can a small, locally-trained "fast" synaptic pathway,
 combined with lightweight episodic replay, reduce catastrophic forgetting
