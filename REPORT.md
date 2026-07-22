@@ -76,10 +76,10 @@ To ensure statistical reliability, each variant was run across 5 random seeds in
 
 - The baseline is extremely consistent (std = 0.0003). It reliably suffers near-total catastrophic forgetting across all seeds. This makes it a reliable reference point.
 
-- All hybrid variants substantially and consistently outperform the baseline (roughly 0.99 to 0.51-0.61 forgetting), confirming that the fast plasticity pathway meaningfully reduces catastrophic forgetting.
-- Replay helps, as hypothesised: removing replay increases forgetting from 0.549 to 0.614.
-- Unexpected ablation finding: removing the learned gate (fixing the fast/slow combination at a static 50/50 average) performs statistically indistinguishable from, if not marginally better than, the full model with a learned gate (0.514 vs 0.549). This suggests the learned gate, in its current simple scalar form, is not yet extracting clear additional value over a fixed combination weight. This is flagged as an open question for future work (Section 8) rather than a negative result to hide. It narrows down which components are doing the real work.
-- Variance across seeds is notably higher for the hybrid variants (std up to 0.17) than the baseline. This indicates the hybrid model's benefit, while real on average, is not yet fully stable across random initialisations. This honest limitation is reported rather than smoothed over.
+- All hybrid variants substantially and consistently outperform the baseline (roughly 0.99 to 0.51-0.61 forgetting), confirming that the fast plasticity pathway significantlly reduces catastrophic forgetting.
+- Replay helps: removing replay increases forgetting from 0.549 to 0.614.
+- Unexpected ablation finding: removing the learned gate (fixing the fast/slow combination at a static 50/50 average) performs statistically indistinguishable from the full model with a learned gate (0.514 vs 0.549). The current scalar gate does not provide a clear performance advantage. This suggests that a simple global gate is not expressive enough to learn an effective combination policy from the available data, making a more flexible gating mechanism an important direction for future work. It also helps identify which components are responsible for the observed improvement.
+- Variance across random seeds is notably higher for the hybrid variants (std up to 0.17) than for the baseline. The average improvement is consistent across experiments. Additional tuning is needed to improve stability across different random initialisations and make the model more reliable.
 
 ### 5.2 Single-run detailed results (representative run, seed 0)
 
@@ -93,7 +93,7 @@ To ensure statistical reliability, each variant was run across 5 random seeds in
 | 4 | 0.000 | 0.000 | 0.000 | 0.995 | – |
 | 5 | 0.000 | 0.000 | 0.000 | 0.000 | 0.984 |
 
-**Hybrid — full model:**
+**Hybrid - full model:**
 
 | After training Task | Task 1 | Task 2 | Task 3 | Task 4 | Task 5 |
 |---|---|---|---|---|---|
@@ -115,34 +115,34 @@ To ensure statistical reliability, each variant was run across 5 random seeds in
 
 ![Fast vs Slow Pathway Accuracy](figures/fig6_fast_vs_slow.png)
 
-This confirms the mechanism directly: the slow (backprop) pathway forgets completely, exactly like the baseline. The fast (plasticity + replay) pathway is what carries forward memory of Task 1. It retains 96.4% accuracy on Task 1 even after training on 4 subsequent tasks.
+This confirms the mechanism directly: the slow (backprop) pathway forgets completely exactly like the baseline. The fast (plasticity + replay) pathway is what carries forward memory of Task 1. It retains 96.4% accuracy on Task 1 even after training on 4 subsequent tasks.
 
-## 6. Observed Anomaly — Recency Bias
+## 6. Observed Anomaly - Recency Bias
 
-An unexpected pattern emerged: accuracy on Task 5 (the most recently trained task) itself drops to 0% by the end of training, both for the fast pathway alone and in the combined output. The most likely explanation is a timing interaction between within task learning and inter task replay. Replay steps interleaved late in Task 5 training pull the fast pathway weights back toward earlier tasks before the current task association is fully consolidated. Task 2 and Task 3 also show partial, non monotonic retention (13.8% and 3.7%) rather than a clean decay curve, suggesting the replay and consolidation balance is not yet well tuned across all tasks.
+An unexpected pattern emerged during the final evaluation. Accuracy on Task 5 (the most recently trained task) drops to 0% by the end of training for both the fast pathway alone and the combined output. The most likely explanation is a timing interaction between within task learning and inter task replay, where replay steps late in Task 5 training pull the fast pathway weights back toward earlier tasks before the current task is fully consolidated. Task 2 and Task 3 also show partial, non monotonic retention (13.8% and 3.7%) indicating that the balance between replay and consolidation is not yet well tuned across all tasks.
 
-This is a genuine instance of the stability plasticity trade off. Too much plasticity and replay protect old knowledge at the cost of acquiring new knowledge cleanly. This is a well known open problem in the continual learning literature, not a flaw specific to this implementation, although the specific severity seen here (complete loss of the newest task) indicates the replay frequency and or fast pathway learning rate need further tuning.
+This behaviour highlights the stability plasticity trade off. Strong replay and plasticity preserve older memories and also interfere with learning the newest task. Similar behaviour has been reported in the continual learning literature and the complete loss of Task 5 suggests that the replay frequency and fast pathway learning rate require further tuning.
 
-A mitigation attempt and its negative result: an attempt was made to fix this by (a) scaling down replay updates to 30% strength and (b) adding a short consolidation pass of extra current task only training at the end of each task. This eliminated the recency bias anomaly, but at the cost of eliminating essentially all of the benefit of the fast pathway. Average forgetting returned to 0.9857 +/- 0.0036, statistically indistinguishable from the baseline. This shows the fast pathway benefit and the recency bias anomaly are closely coupled. Strengthening current task consolidation directly undoes the retention of older tasks in this simple, shared weight fast pathway. This attempt was reverted, and the results reported in Section 5.1 use the original (unmitigated) configuration. Resolving this coupling, retaining old tasks without sacrificing the newest one, is left as the primary direction for future work (Section 8).
+A mitigation attempt and its negative result: an attempt was made to fix this by (a) scaling down replay updates to 30% strength and (b) adding a short consolidation pass of extra current task only training at the end of each task. This eliminated the recency bias anomaly, but at the cost of eliminating essentially all of the benefit of the fast pathway. Average forgetting returned to 0.9857 +/- 0.0036, statistically indistinguishable from the baseline. This shows the fast pathway benefit and the recency bias anomaly are closely coupled. Strengthening current task consolidation directly reduces the retention of older tasks in this simple shared weight fast pathway. The experiments reported in Section 5.1 therefore use the original configuration. Resolving this coupling and improving retention of both old and new tasks remains the primary direction for future work (Section 8).
 
 ## 7. Limitations
 
-- High cross seed variance in hybrid variants (std up to 0.17), while the baseline is highly stable (std 0.0003). The average improvement is real, but reliability across initialisations needs improvement.
+- High cross seed variance in hybrid variants (std up to 0.17) while the baseline is highly stable (std 0.0003). The average improvement is real but reliability across initialisations needs improvement.
 - The learned gate does not yet show a clear advantage over a fixed 50/50 combination in the ablation study. Its current simple scalar design may be too limited to learn a useful policy from this amount of data.
 - Fast pathway is a single linear layer with no hidden layers or nonlinearity.
-- Replay buffer is small (20 exemplars per task), and replay frequency was fixed arbitrarily (every 5 batches) rather than tuned.
-- Evaluated only on Split MNIST, a relatively easy benchmark. Harder, more temporally structured benchmarks (e.g. Spiking Heidelberg Digits) have not yet been tested.
+- Replay buffer is small (20 exemplars per task) and replay frequency was fixed arbitrarily (every 5 batches) rather than tuned.
+- Evaluated only on Split MNIST. 
 - No comparison yet against established continual learning baselines (EWC, GEM, and experience replay variants from the literature).
 - The recency bias anomaly (Section 6) remains unresolved and likely contributes to the high variance observed in Section 5.1.
 
 ## 8. Future Work
 
-- Redesign the gate as a per class or input dependent mechanism rather than a single global scalar, to test whether a more expressive gate can outperform fixed averaging.
+- Redesign the gate as a per class or input dependent mechanism. A more expressive gate may learn a better combination policy than the current scalar design.
 - Tune replay frequency and buffer size to resolve the recency bias anomaly and reduce cross seed variance.
-- Test on event based, temporally rich datasets (e.g. SHD, N MNIST) rather than rate coded static images.
-- Compare against established continual learning baselines (EWC, GEM, and experience replay methods) for a stronger empirical claim.
-- Investigate the source of high variance directly (e.g. via weight trajectory analysis) rather than only observing it at the metric level.
+- Evaluate the model on event based, temporally rich datasets such as SHD and N MNIST to assess its performance on more challenging neuromorphic benchmarks.
+- Compare the proposed model with established continual learning baselines such as EWC, GEM, and experience replay methods to strengthen the empirical evaluation.
+- Investigate the source of high variance directly using techniques such as weight trajectory analysis and parameter dynamics.
 
 ## 9. Conclusion
 
-A hybrid SNN combining a backpropagation trained slow pathway with a locally trained (delta rule) fast pathway and lightweight episodic replay reduces catastrophic forgetting on Split MNIST from 0.9945 +/- 0.0003 (baseline) to 0.5489 +/- 0.1739 average forgetting across 5 random seeds. This is a substantial, mechanistically understood, and statistically supported improvement achieved through iterative debugging guided by isolated pathway diagnostics. An ablation study confirms replay contributes positively to this result, while revealing that the learned gate does not yet clearly outperform a fixed combination weight. This provides a specific and actionable direction for future work. An open trade off between memory stability and new task plasticity remains, consistent with findings across the continual learning literature, and is reflected in the higher variance observed for the hybrid model relative to the baseline.
+A hybrid SNN combining a backpropagation trained slow pathway with a locally trained (delta rule) fast pathway and lightweight episodic replay reduces catastrophic forgetting on Split MNIST from 0.9945 +/- 0.0003 (baseline) to 0.5489 +/- 0.1739 average forgetting across 5 random seeds. The ablation study shows that replay makes a meaningful contribution to this improvement, while the learned gate provides little additional benefit over a fixed combination weight. The results also highlight an open trade off between memory stability and new task plasticity, which contributes to the higher variance observed across random seeds. Addressing this trade off and developing a more effective gating mechanism will be the main focus of future work.
