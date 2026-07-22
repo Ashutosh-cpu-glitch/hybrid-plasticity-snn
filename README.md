@@ -8,13 +8,7 @@ replay, aimed at reducing catastrophic forgetting in continual learning.
 
 ## Overview
 
-Spiking Neural Networks trained purely by backpropagation-through-time
-suffer from catastrophic forgetting when trained sequentially on new
-tasks. This project investigates whether a small, locally-trained "fast"
-synaptic pathway, combined with lightweight episodic replay, can reduce
-this forgetting, inspired by Complementary Learning Systems theory
-(McClelland et al., 1995), in which the hippocampus learns quickly via
-local plasticity while the cortex consolidates knowledge slowly.
+Spiking Neural Networks trained purely by backpropagation-through-time suffer from catastrophic forgetting when trained sequentially on new tasks. This project investigates whether a small, locally-trained "fast" synaptic pathway can reduce this forgetting. It also incorporates lightweight episodic replay to improve continual learning performance. The approach is inspired by Complementary Learning Systems theory (McClelland et al., 1995), where the hippocampus learns rapidly through local plasticity while the cortex consolidates knowledge more gradually.
 
 **Headline result:** on the Split-MNIST class-incremental benchmark
 (5 sequential tasks, 5 random seeds), average forgetting is reduced from
@@ -26,12 +20,12 @@ development process, ablation study, and honestly-reported limitations.
 
 ## Architecture
 
-- **Slow pathway** — two layers of Leaky Integrate-and-Fire (LIF) neurons
+- **Slow pathway** - two layers of Leaky Integrate-and-Fire (LIF) neurons
   trained end-to-end via backpropagation with a surrogate gradient.
-- **Fast pathway** — a single linear layer updated only by a local delta
+- **Fast pathway** - a single linear layer updated only by a local delta
   rule (no backpropagation, no gradient through time).
-- **Gate** — a learned scalar combining the two pathways' outputs.
-- **Episodic replay buffer** — after each task, a small number of
+- **Gate** - a learned scalar combining the two pathways' outputs.
+- **Episodic replay buffer** - after each task, a small number of
   exemplars are stored and periodically replayed through the fast
   pathway only, protecting old associations without touching the slow
   pathway.
@@ -68,7 +62,7 @@ python train.py
 ```
 
 Run the full multi-seed ablation study (baseline, hybrid, and two
-ablated variants, 5 seeds each — this performs 20 full training runs
+ablated variants, 5 seeds each - this performs 20 full training runs
 and may take 30–60+ minutes on a free-tier GPU):
 
 ```bash
