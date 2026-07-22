@@ -129,8 +129,8 @@ A mitigation attempt and its negative result: an attempt was made to fix this by
 
 - High cross seed variance in hybrid variants (std up to 0.17) while the baseline is highly stable (std 0.0003). The average improvement is real but reliability across initialisations needs improvement.
 - The learned gate does not yet show a clear advantage over a fixed 50/50 combination in the ablation study. Its current simple scalar design may be too limited to learn a useful policy from this amount of data.
-- Fast pathway is a single linear layer with no hidden layers or nonlinearity.
-- Replay buffer is small (20 exemplars per task) and replay frequency was fixed arbitrarily (every 5 batches) rather than tuned.
+- The fast pathway is a single linear layer with no hidden layers or nonlinearity.
+- The replay buffer is small (20 exemplars per task) and replay frequency was fixed arbitrarily (every 5 batches) rather than tuned.
 - Evaluated only on Split MNIST. 
 - No comparison yet against established continual learning baselines (EWC, GEM, and experience replay variants from the literature).
 - The recency bias anomaly (Section 6) remains unresolved and likely contributes to the high variance observed in Section 5.1.
