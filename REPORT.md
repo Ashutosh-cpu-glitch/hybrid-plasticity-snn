@@ -7,7 +7,7 @@
 
 ## 1. Motivation
 
-Spiking Neural Networks (SNNs) trained purely with backpropagation-through-time (BPTT) via surrogate gradients often suffer from catastrophic forgetting when trained sequentially on new tasks. This causes a significant loss of performance on tasks learned earlier reflecting the classic stability-plasticity dilemma in neuroscience.
+Spiking Neural Networks (SNNs) trained purely with backpropagation-through-time (BPTT) via surrogate gradients often suffer from catastrophic forgetting when trained sequentially on new tasks. As a result, their performance on previously learned tasks drops significantly. This reflects the classic stability-plasticity dilemma in neuroscience.
 
 Biological brains avoid this through Complementary Learning Systems (McClelland et al., 1995). The hippocampus learns new information quickly via fast, local, activity-dependent synaptic plasticity, while the cortex consolidates knowledge slowly. Hippocampal replay of past experiences (observed during rest and sleep) is believed to protect old memories from being overwritten during new learning.
 
