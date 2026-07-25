@@ -7,7 +7,7 @@
 
 ## 1. Motivation
 
-Spiking Neural Networks (SNNs) trained purely with backpropagation-through-time (BPTT) via surrogate gradients often suffer from catastrophic forgetting when trained sequentially on new tasks. As a result, their performance on previously learned tasks drops significantly. This reflects the classic stability-plasticity dilemma in neuroscience. Biological brains avoid this through Complementary Learning Systems (McClelland et al., 1995). The hippocampus learns new information quickly via fast, local, activity-dependent synaptic plasticity, while the cortex consolidates knowledge slowly. Hippocampal replay of past experiences (observed during rest and sleep) is believed to protect old memories from being overwritten during new learning.
+Spiking Neural Networks (SNNs) trained with backpropagation-through-time (BPTT) via surrogate gradients often suffer from catastrophic forgetting when trained sequentially on new tasks. As a result, their performance on previously learned tasks drops significantly. This reflects the classic stability-plasticity dilemma in neuroscience. Biological brains avoid this through Complementary Learning Systems (McClelland et al., 1995). The hippocampus learns new information quickly via fast, local, activity-dependent synaptic plasticity, while the cortex consolidates knowledge slowly. Hippocampal replay of past experiences (observed during rest and sleep) is believed to protect old memories from being overwritten during new learning.
 
 This project asks: **can a small, locally-trained "fast" synaptic pathway, combined with lightweight episodic replay, reduce catastrophic forgetting in an SNN trained mainly by backpropagation?**
 
@@ -18,20 +18,17 @@ This project asks: **can a small, locally-trained "fast" synaptic pathway, combi
 The model, `HybridSNN`, has two parallel pathways whose outputs are combined
 by a learned gate:
 
-- **Slow pathway** - consists of two layers of Leaky Integrate-and-Fire (LIF) neurons trained end-to-end using backpropagation-through-time (BPTT) with surrogate gradients (fast sigmoid). This pathway performs the main task learning and serves as the standard gradient-based component of the network. - **Fast pathway** - a single linear projection from input to output, updated **only** by a local, biologically-plausible learning rule (no backpropagation, no gradient through time). This represents the plasticity component.
-- **Gate** (α, a learned scalar) — combines the two pathways:
+- **Slow pathway** - consists of two layers of Leaky Integrate-and-Fire (LIF) neurons trained end-to-end using backpropagation-through-time (BPTT) with surrogate gradients (fast sigmoid). This pathway performs the main task learning and serves as the standard gradient-based component of the network.
+- **Fast pathway** - a single linear projection from input to output which is updated **only** by a local and biologically-plausible learning rule (no backpropagation, no gradient through time). This represents the plasticity component.
+- **Gate** (α, a learned scalar) - combines the two pathways:
   `output = α · fast_output + (1-α) · slow_output`.
 
 ![Gate Evolution](figures/fig4_gate_evolution.png)
-- **Episodic replay buffer** — after each task, 20 exemplars are stored.
-  While training on later tasks, these exemplars are periodically replayed
-  through the fast pathway only (not the slow pathway), analogous to
-  hippocampal replay that helps preserve previously learned associations
+- **Episodic replay buffer** — after each task, 20 exemplars are stored in a replay buffer. During later tasks these samples are replayed only through the fast pathway. This reflects hippocampal replay and reduces catastrophic forgetting.
 
 ![Replay Mechanism](figures/fig7_replay_mechanism.png)
 
-A pure-backprop `BaselineSNN` (slow pathway only, no plasticity, no replay)
-is used as the control condition.
+A pure-backprop `BaselineSNN` (slow pathway only, no plasticity, no replay) is used as the control condition.
 
 ## 3. Experimental Setup
 
@@ -45,7 +42,7 @@ is used as the control condition.
 
 ## 4. Development / Debugging Journey
 
-This project went through several iterations, each motivated by diagnosing *why* the fast pathway was not helping. This iterative process is itself a core part of the research contribution.
+The project underwent several iterations because the fast pathway was not helping. This iterative refinement is a core part of the research contribution.
 
 | Iteration | Fast-pathway design | Baseline forgetting | Hybrid forgetting | Outcome |
 |---|---|---|---|---|
@@ -54,7 +51,7 @@ This project went through several iterations, each motivated by diagnosing *why*
 | 3 | Delta-rule error signal, but readout based on a self-referential spike threshold | 0.9960 | 0.9949 | No benefit - the threshold shifted as weights changed, destabilising learning |
 | 4 | Delta-rule (Widrow-Hoff) on rate-coded (continuous) activity + episodic replay | 0.9952 | **0.7002*** | **Significant reduction in forgetting** |
 
-\* This is a single initial run, reported here to mark the point at which the approach started working. All headline results in Section 5 below use a proper 5-seed evaluation of this same design, which gives a lower (better) mean of 0.5489 with higher variance (± 0.1739) than this initial single-run experiment — see Section 5.1 above for the statistically reliable number.
+\* This is a single initial run reported to mark the point at which the approach started working. The headline results in Section 5 are based on a proper 5-seed evaluation of the same design. The 5-seed evaluation achieved a lower average forgetting of 0.5489 ± 0.1739 than this initial run and provides the statistically reliable result.
 
 Each failed iteration was diagnosed using an isolated-pathway evaluation (measuring the fast pathway's and slow pathway's accuracy separately) before being fixed. For example, diagnostic evaluation on Iteration 3 showed the fast pathway achieved only 46% accuracy on Task 1 and 0% on the task it had *just* been trained on, revealing the readout instability instead of a forgetting problem per se.
 
@@ -76,13 +73,11 @@ To ensure statistical reliability, each variant was run across 5 random seeds ra
 **Interpretation:**
 
 - The baseline is extremely consistent (std = 0.0003). It reliably suffers near-total catastrophic forgetting across all seeds. This makes it a reliable reference point.
-- All hybrid variants substantially and consistently outperform the baseline (roughly 0.99 → 0.51–0.61 forgetting), confirming that the fast plasticity pathway meaningfully reduces catastrophic forgetting.
+- All hybrid variants consistently outperform the baseline with forgetting reduced from about 0.99 to 0.51-0.61. This confirms that the fast plasticity pathway meaningfully reduces catastrophic forgetting.
 - **Replay helps, as hypothesised:** removing replay increases forgetting from 0.549 to 0.614.
-- **Unexpected ablation finding:** removing the learned gate (fixing the fast/slow combination at a static 50/50 average) performs statistically indistinguishable from — if not marginally better than — the full model with a learned gate (0.514 vs 0.549). This suggests the learned gate, in its current simple scalar form, is not yet extracting clear additional value over a fixed combination weight. This is flagged as an open question for future work (Section 8) rather than a negative result to hide — it narrows down which components are doing the real work.
-- **Variance across seeds is notably higher for the hybrid variants (std up to 0.17) than the baseline.** This indicates the hybrid model's benefit, while real on average, is not yet fully stable across random initialisations — an honest limitation reported below rather than smoothed over.
-
-### 5.2 Single-run detailed results (illustrative run, forgetting = 0.7002 — the initial single-run result from Iteration 4 in Table 1, shown here for a detailed per-task breakdown; Section 5.1 above reports the 5-seed mean used as the final headline result)
-
+- **Unexpected ablation finding:** removing the learned gate and using a fixed 50/50 combination produced statistically similar performance to the full model with a learned gate (0.514 vs 0.549). This suggests that the current scalar gate does not provide a clear improvement over a fixed combination weight. This remains an open question for future work and helps to identify which components contribute most to the observed performance.
+- **Variance across seeds is notably higher for the hybrid variants (std up to 0.17) than the baseline.** This indicates that the hybrid model improves continual learning on average but its performance still varies across random initializations. This limitation is discussed in Section 8.
+### 5.2 Single-run detailed results (illustrative run, forgetting = 0.7002 — the initial single run from Iteration 4 is shown in Table 1 to provide a detailed per task breakdown. Section 5.1 reports the final result based on the 5 seed evaluation.
 **Baseline (backprop only):**
 
 | After training Task | Task 1 | Task 2 | Task 3 | Task 4 | Task 5 |
@@ -105,7 +100,8 @@ To ensure statistical reliability, each variant was run across 5 random seeds ra
 
 ![Task 1 Accuracy Trajectory](figures/fig5_task1_trajectory.png)
 
-The isolated pathway diagnostic below is measured on this same run. **Note:** this is a diagnostic evaluation of each pathway in isolation (each pathway's own accuracy if it were used alone), and is not directly comparable to the combined-model accuracy table above, since the combined model's prediction is the argmax of a weighted *sum* of the two pathways' output logits, not an average or selection between their individual predictions.
+The isolated pathway diagnostic below is measured on this same run. 
+**Note:** this table reports the diagnostic accuracy of each pathway when evaluated independently. These results cannot be directly compared with the combined model because the final prediction is computed from the weighted sum of the output logits from both pathways.
 
 | Task | Slow-pathway-only accuracy (isolated) | Fast-pathway-only accuracy (isolated) |
 |---|---|---|
@@ -117,33 +113,33 @@ The isolated pathway diagnostic below is measured on this same run. **Note:** th
 
 ![Fast vs Slow Pathway Accuracy](figures/fig6_fast_vs_slow.png)
 
-**On the Task 5 discrepancy (0% combined vs. 49.1% slow-only):** this illustrates why isolated-pathway accuracy cannot be used to predict combined accuracy by simple averaging: classification accuracy is computed from the *argmax* of the combined logits, not from a vote or average of the two pathways' predicted classes. One plausible explanation is that the fast pathway's logits become biased toward earlier tasks' classes (having been repeatedly reinforced by replay of Tasks 1- ). Because the final prediction is computed from the summed logits of two differently-calibrated pathways (spike counts for the slow pathway vs. delta-rule activations for the fast pathway), this may shift the argmax away from the correct Task 5 class even where the slow pathway's own logit for the correct class was the highest of its own outputs. **We have not directly inspected the logit distributions to confirm this**; it remains a hypothesis rather than a verified observation. Confirming it, and addressing the underlying scale mismatch between the two pathways, is left as future work (Section 8) and is flagged as a limitation (Section 7).
+**On the Task 5 discrepancy (0% combined vs. 49.1% slow-only):** this explains why the accuracy of the individual pathways cannot be used to predict the accuracy of the combined model. The final prediction is computed from the combined output logits of both pathways rather than the prediction of either pathway alone. One possible explanation is that replay biases the fast pathway toward classes from earlier tasks. This may influence the final prediction when the logits from both pathways are combined. We did not directly analyze the logit distributions to verify this explanation. This remains a hypothesis and is left for future investigation. Addressing the scale mismatch between the two pathways is also left as future work and is discussed as a limitation.
 
 This confirms the mechanism directly: the slow (backprop) pathway forgets completely, exactly like the baseline. The fast (plasticity + replay) pathway is what carries forward memory of Task 1 — it retains 96.4% accuracy on Task 1 even after training on 4 subsequent tasks.
 
 ## 6. Observed Anomaly — Recency Bias
 
-An unexpected pattern emerged in the illustrative single run reported in Section 5.2 (forgetting = 0.7002; these percentages are not from the 5-seed average in Section 5.1): accuracy on Task 5 (the most recently trained task) itself drops to 0% by the end of training, both for the fast pathway alone and in the combined output. The most likely explanation is a timing interaction between within-task learning and inter-task replay: replay steps interleaved late in Task 5's training pull the fast pathway's weights back toward earlier tasks before the current task's association is fully consolidated. In this same illustrative run, Task 2 and Task 3 also show partial, non-monotonic retention (13.8% and 3.7% combined-model accuracy, respectively) rather than a clean decay curve, suggesting the replay/consolidation balance is not yet well-tuned across all tasks.
+An unexpected pattern emerged in the illustrative single run reported in Section 5.2 (forgetting = 0.7002; these percentages are not from the 5-seed average in Section 5.1): accuracy on Task 5 (the most recently trained task) itself drops to 0% by the end of training, both for the fast pathway alone and in the combined output. One possible explanation is the interaction between within task learning and inter task replay. Replay during the later stages of Task 5 training may shift the fast pathway toward earlier tasks before the current task is fully consolidated. In this run Task 2 and Task 3 also showed partial retention with combined model accuracies of 13.8% and 3.7%. This suggests that the balance between replay and consolidation is not yet well tuned across all tasks.
 
-This is a genuine instance of the **stability-plasticity trade-off** — too much plasticity/replay protects old knowledge at the cost of acquiring new knowledge cleanly. This is a well-known open problem in the continual learning literature, not a flaw specific to this implementation, though the specific severity seen here (complete loss of the newest task) indicates the replay frequency and/or fast-pathway learning rate need further tuning.
+This result reflects the stability plasticity trade off in continual learning. Strong replay helps preserve earlier knowledge but can reduce learning of new tasks. This is a well known challenge in continual learning and is not specific to this implementation. The complete loss of the newest task suggests that the replay frequency or the fast pathway learning rate requires further tuning.
 
-**A mitigation attempt and its (negative) result:** An attempt was made to fix this by (a) scaling down replay updates to 30% strength and (b) adding a short "consolidation" pass of extra current-task-only training at the end of each task. This *eliminated* the recency-bias anomaly, but at the cost of eliminating essentially all of the benefit of the fast pathway — average forgetting returned to 0.9857 ± 0.0036, statistically indistinguishable from the baseline. This shows the fast pathway's benefit and the recency-bias anomaly are closely coupled: strengthening current-task consolidation directly undoes the retention of older tasks in this simple, shared-weight fast pathway. This attempt was reverted; the results reported in Section 5.1 use the original (unmitigated) configuration. Resolving this coupling — retaining old tasks without sacrificing the newest one — is left as the primary direction for future work (Section 8).
+**A mitigation attempt and its (negative) result:** An attempt was made to reduce this effect by lowering replay updates to 30% strength and adding a short consolidation phase using only the current task at the end of each task. This removed the recency bias but also removed most of the benefit of the fast pathway. Average forgetting increased to 0.9857 ± 0.0036 which was similar to the baseline. This suggests that the benefit of the fast pathway is closely linked to the recency bias. Improving current task consolidation reduced retention of earlier tasks in the current implementation. This modification was not used in the final model. The results in Section 5.1 are based on the original configuration. Resolving this trade off while preserving both old and new tasks remains an important direction for future work.
 
 ## 7. Limitations
 
-- **High cross-seed variance in hybrid variants** (std up to 0.17), while the baseline is highly stable (std 0.0003). The average improvement is real, but reliability across initialisations needs improvement.
-- **The learned gate does not yet show a clear advantage** over a fixed 50/50 combination in the ablation study — its current simple scalar design may be too limited to learn a useful policy from this amount of data.
-- Fast pathway is a single linear layer; no hidden layers or nonlinearity.
-- Replay buffer is small (20 exemplars/task) and replay frequency was fixed arbitrarily (every 5 batches) rather than tuned.
-- Evaluated only on Split-MNIST, a relatively easy benchmark; harder, more temporally-structured benchmarks (e.g. Spiking Heidelberg Digits) have not yet been tested.
-- No comparison yet against established continual learning baselines (EWC, GEM, experience replay variants from the literature).
-- The recency-bias anomaly (Section 6) remains unresolved and likely contributes to the high variance observed in Section 5.1.
-- **The proposed explanation for the Task 5 combined-vs-isolated accuracy discrepancy (Section 5.2) — a scale mismatch between the two pathways' logits — is an untested hypothesis, not a directly verified observation.** We have not inspected the actual logit distributions.
+- The hybrid model shows higher cross seed variance than the baseline. Although the average performance improves the results are not yet fully consistent across different random initializations.
+- The learned gate does not provide a clear improvement over a fixed 50/50 combination. The current scalar gate may be too simple to learn an effective weighting strategy.
+- The fast pathway consists of a single linear layer with no hidden layers or nonlinear activation.
+- The replay buffer stores only 20 exemplars per task and the replay frequency was fixed throughout the experiments without systematic tuning.
+- The model was evaluated only on Split MNIST. More challenging continual learning benchmarks such as Spiking Heidelberg Digits have not yet been tested.
+- The proposed method has not yet been compared with established continual learning approaches such as EWC GEM and experience replay methods.
+- The recency bias observed in Section 6 remains unresolved and may contribute to the higher performance variability of the hybrid model.
+- The proposed explanation for the difference between isolated pathway accuracy and combined model accuracy in Section 5.2 remains a hypothesis. The logit distributions of the two pathways were not directly analyzed to verify the proposed scale mismatch.
 
 ## 8. Future Work
 
-- Directly inspect and compare the logit distributions of the two pathways to test the scale-mismatch hypothesis proposed in Section 5.2, and consider normalising both pathways' outputs before summation if confirmed.
-- Redesign the gate as a per-class or input-dependent mechanism rather than a single global scalar, to test whether a more expressive gate can outperform fixed averaging.
+- Inspect the logit distributions of both pathways to test the scale mismatch hypothesis proposed in Section 5.2. If confirmed both pathways can be normalized before combining their outputs.
+- Redesign the gate to make it class specific or input dependent and evaluate whether it improves performance over a fixed combination weight.
 - Tune replay frequency and buffer size to resolve the recency-bias anomaly and reduce cross-seed variance.
 - Test on event-based, temporally-rich datasets (e.g. SHD, N-MNIST) rather than rate-coded static images.
 - Compare against established continual learning baselines (EWC, GEM) for a stronger empirical claim.
@@ -151,4 +147,4 @@ This is a genuine instance of the **stability-plasticity trade-off** — too muc
 
 ## 9. Conclusion
 
-A hybrid SNN combining a backpropagation-trained slow pathway with a locally-trained (delta-rule) fast pathway and lightweight episodic replay reduces catastrophic forgetting on Split-MNIST from 0.9945 ± 0.0003 (baseline) to 0.5489 ± 0.1739 average forgetting across 5 random seeds — a substantial, mechanistically-understood, and statistically-supported improvement achieved through iterative debugging guided by isolated-pathway diagnostics. An ablation study confirms replay contributes positively to this result, while revealing that the learned gate does not yet clearly outperform a fixed combination weight — a specific, actionable direction for future work. An open trade-off between memory stability and new-task plasticity remains, consistent with findings across the continual learning literature, and is reflected in the higher variance observed for the hybrid model relative to the baseline.
+A hybrid SNN combining a backpropagation trained slow pathway with a locally trained delta rule fast pathway and lightweight episodic replay reduced catastrophic forgetting on Split MNIST from 0.9945 ± 0.0003 to 0.5489 ± 0.1739 across five random seeds. This improvement was achieved through iterative model refinement guided by isolated pathway diagnostics. The ablation study showed that replay contributed to the performance improvement while the learned gate did not provide a clear advantage over a fixed combination weight. The results also revealed a trade off between memory stability and learning new tasks. This limitation is reflected in the higher variance of the hybrid model and provides a clear direction for future work.
