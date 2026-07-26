@@ -3,7 +3,7 @@ lif_neuron.py
 
 Implements the "slow pathway" component: a Leaky Integrate-and-Fire (LIF)
 spiking neuron layer trained end-to-end via backpropagation using a
-surrogate gradient, since spikes are non-differentiable.
+surrogate gradient.
 """
 
 import torch
