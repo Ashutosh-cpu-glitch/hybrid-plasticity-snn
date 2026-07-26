@@ -4,12 +4,12 @@ hybrid_model.py
 Combines two complementary learning pathways, inspired by Complementary
 Learning Systems theory (McClelland et al., 1995):
 
-    SLOW PATHWAY  -> LIFLayer (lif_neuron.py)  -- backpropagation-trained
-    FAST PATHWAY  -> STDPLinear (stdp.py)       -- local delta-rule plasticity
+    SLOW PATHWAY  ---> LIFLayer (lif_neuron.py)  - backpropagation-trained
+    FAST PATHWAY  ---> STDPLinear (stdp.py)      - local delta-rule plasticity
 
 A learned scalar gate combines the two pathways' outputs. An episodic
 replay buffer periodically re-exposes the fast pathway to a small number
-of examples from previous tasks (hippocampal-replay-inspired), without
+of examples from previous tasks (hippocampal-replay-inspired) without
 affecting the slow pathway.
 """
 
@@ -29,16 +29,15 @@ class HybridSNN(nn.Module):
         self.slow_layer1 = LIFLayer(in_features, hidden_features, beta, threshold)
         self.slow_layer2 = LIFLayer(hidden_features, out_features, beta, threshold)
 
-        # Fast pathway: delta-rule trained, direct input -> output projection
+        # Fast pathway: delta rule trained direct input to output layer
         self.fast_layer = STDPLinear(in_features, out_features)
 
         # Gate: learns how much weight to give the fast vs. slow pathway.
-        # use_gate=False -> ablation mode: fixed 50/50 average.
+        # use_gate=False: fixed 50/50 combination (ablation)
         self.use_gate = use_gate
         self.gate = nn.Parameter(torch.tensor(0.5))
 
     def reset_fast_pathway(self, batch_size, device):
-        """Ensures the fast pathway's weights are on the correct device."""
         self.fast_layer.to_device(device)
 
     def _pre_rate(self, x_seq):
