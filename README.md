@@ -8,7 +8,7 @@ replay, aimed at reducing catastrophic forgetting in continual learning.
 
 ## Overview
 
-Spiking Neural Networks trained purely by backpropagation-through-time suffer from catastrophic forgetting when trained sequentially on new tasks. This project investigates whether a small, locally-trained "fast" synaptic pathway can reduce this forgetting. It also incorporates lightweight episodic replay to improve continual learning performance. The approach is inspired by Complementary Learning Systems theory (McClelland et al., 1995), where the hippocampus learns rapidly through local plasticity while the cortex consolidates knowledge more gradually.
+Spiking Neural Networks trained purely by backpropagation-through-time suffer from catastrophic forgetting when trained sequentially on new tasks. This project investigates whether a small, locally-trained "fast" synaptic pathway can reduce this forgetting. It also incorporates lightweight episodic replay to improve continual learning performance. The approach is inspired by Complementary Learning Systems theory (McClelland et al., 1995). In this theory the hippocampus learns rapidly through local plasticity while the cortex consolidates knowledge more gradually.
 
 **Headline result:** on the Split-MNIST class-incremental benchmark
 (5 sequential tasks, 5 random seeds), average forgetting is reduced from
@@ -25,10 +25,9 @@ development process, ablation study, and honestly-reported limitations.
 - **Fast pathway** - a single linear layer updated only by a local delta
   rule (no backpropagation, no gradient through time).
 - **Gate** - a learned scalar combining the two pathways' outputs.
-- **Episodic replay buffer** - after each task, a small number of
-  exemplars are stored and periodically replayed through the fast
-  pathway only, protecting old associations without touching the slow
-  pathway.
+- **Episodic replay buffer** - after each task, a small number of exemplars
+  are stored and periodically replayed through the fast pathway. This helps to
+  preserve previously learned associations without updating the slow pathway.
 
 ## Repository Structure
 
@@ -86,7 +85,7 @@ python generate_figures.py
 
 ![Forgetting comparison](figures/fig3_forgetting_ablation.png)
 
-Full results, per-task breakdowns, isolated-pathway diagnostics, and a
+Full results, per-task breakdowns, isolated-pathway diagnostics and a
 discussion of an observed stability-plasticity trade-off (recency bias)
 are in [`REPORT.md`](REPORT.md).
 
@@ -94,7 +93,7 @@ are in [`REPORT.md`](REPORT.md).
 
 This is a small-scale exploratory study, not a publication-ready paper.
 Notable open items (detailed in `REPORT.md`):
-- Evaluated only on Split-MNIST, a relatively easy benchmark.
+- Evaluated only on the Split MNIST benchmark.
 - No comparison yet against established continual learning baselines
   (EWC, GEM, etc.).
 - The learned gate does not yet show a clear advantage over a fixed
