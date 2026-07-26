@@ -37,10 +37,8 @@ COLOR_BASELINE = "#8C8C8C"
 COLOR_HYBRID = "#55A868"
 COLOR_ACCENT = "#C44E52"
 
-
-# ---------------------------------------------------------------------
 # Figure 1: Architecture diagram (schematic)
-# ---------------------------------------------------------------------
+
 def fig1_architecture():
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.set_xlim(0, 10)
@@ -84,9 +82,7 @@ def fig1_architecture():
     plt.close()
 
 
-# ---------------------------------------------------------------------
 # Figure 2: Continual learning protocol (schematic)
-# ---------------------------------------------------------------------
 def fig2_protocol():
     fig, ax = plt.subplots(figsize=(9, 3))
     ax.set_xlim(0, 12)
@@ -120,9 +116,7 @@ def fig2_protocol():
     plt.close()
 
 
-# ---------------------------------------------------------------------
 # Figure 3: Forgetting comparison + ablation (REAL DATA)
-# ---------------------------------------------------------------------
 def fig3_forgetting_ablation():
     variants = ["Baseline\n(backprop only)", "Hybrid\n(full)",
                 "Hybrid\n(no replay)", "Hybrid\n(no gate)"]
@@ -147,9 +141,7 @@ def fig3_forgetting_ablation():
     plt.close()
 
 
-# ---------------------------------------------------------------------
 # Figure 4: Gate evolution over tasks (REAL DATA, representative run)
-# ---------------------------------------------------------------------
 def fig4_gate_evolution():
     tasks = [1, 2, 3, 4, 5]
     gate_values = [0.616, 0.565, 0.562, 0.562, 0.499]
@@ -172,9 +164,7 @@ def fig4_gate_evolution():
     plt.close()
 
 
-# ---------------------------------------------------------------------
-# Figure 5: Task-1 accuracy trajectory (REAL DATA)
-# ---------------------------------------------------------------------
+# Figure 5: Task-1 accuracy trajectory (REAL DATA) 
 def fig5_task1_trajectory():
     tasks = [1, 2, 3, 4, 5]
     baseline_task1 = [0.999, 0.0, 0.0, 0.0, 0.0]
@@ -201,9 +191,8 @@ def fig5_task1_trajectory():
     plt.close()
 
 
-# ---------------------------------------------------------------------
+
 # Figure 6: Fast vs slow pathway isolated accuracy (REAL DATA)
-# ---------------------------------------------------------------------
 def fig6_fast_vs_slow():
     tasks = ["Task 1", "Task 2", "Task 3", "Task 4", "Task 5"]
     slow_acc = [0.000, 0.000, 0.000, 0.000, 0.491]
@@ -230,9 +219,8 @@ def fig6_fast_vs_slow():
     plt.close()
 
 
-# ---------------------------------------------------------------------
+
 # Figure 7: Replay mechanism (schematic)
-# ---------------------------------------------------------------------
 def fig7_replay_mechanism():
     fig, ax = plt.subplots(figsize=(9, 4.5))
     ax.set_xlim(0, 12)
