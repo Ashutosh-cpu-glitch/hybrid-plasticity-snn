@@ -2,17 +2,13 @@
 run_experiments.py
 
 Runs the full multi-seed ablation study:
-  - 4 model variants: baseline, hybrid (full), hybrid (no replay),
-    hybrid (no gate).
-  - 5 random seeds per variant, for statistical reliability.
-  - Reports mean +/- standard deviation of forgetting and Backward
-    Transfer (BWT) for each variant.
+  - 4 model variants: baseline, hybrid (full), hybrid (no replay) and hybrid (no gate).
+  - 5 random seeds per variant for statistical reliability.
+  - Reports mean +/- standard deviation of forgetting and Backward Transfer (BWT) for each variant.
 
-Note: this runs 4 x 5 = 20 full training runs and can take 30-60+
-minutes on a free-tier Colab GPU.
+Note: this runs 4 x 5 = 20 full training runs and can take 30-60+ minutes on a free-tier Colab GPU.
 
-Usage:
-    python run_experiments.py
+Usage: python run_experiments.py
 """
 
 import torch
