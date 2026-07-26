@@ -2,11 +2,11 @@
 stdp.py
 
 Implements the "fast pathway" component: a linear associative memory
-updated by a local, biologically-plausible learning rule(not with backpropagation).
+updated by a local and biologically-plausible learning rule(not with backpropagation).
 
 Design history (see REPORT.md for the full account):
   1. Unsupervised Hebbian STDP: had no notion of class labels and provided no benefit for continual learning.
-  2. Teacher-guided STDP with separate potentiation/depression traces - the two terms cancelled each other out, again providing no benefit.
+  2. Teacher-guided STDP with separate potentiation/depression traces - the two terms cancelled each other out providing no benefit.
   3. A self-referential spike threshold made the readout unstable.
   4. # Final design: local Widrow Hoff delta rule with stable fully local learning. No backpropagation or backpropagation through time.
      learning rules used in the reward-modulated STDP / e-prop literature.
