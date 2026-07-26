@@ -1,7 +1,7 @@
 """
 baseline_model.py
 
-Control condition: a standard SNN trained purely by backpropagation,
+Control condition: a standard SNN trained purely by backpropagation
 with no local plasticity and no replay. Used to measure catastrophic
 forgetting in the absence of any mitigation.
 """
