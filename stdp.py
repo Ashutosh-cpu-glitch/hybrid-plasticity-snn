@@ -2,18 +2,13 @@
 stdp.py
 
 Implements the "fast pathway" component: a linear associative memory
-updated by a local, biologically-plausible learning rule instead of
-backpropagation.
+updated by a local, biologically-plausible learning rule(not with backpropagation).
 
 Design history (see REPORT.md for the full account):
-  1. Unsupervised Hebbian STDP -- had no notion of class labels and
-     provided no benefit for continual learning.
-  2. Teacher-guided STDP with separate potentiation/depression traces --
-     the two terms cancelled each other out, again providing no benefit.
+  1. Unsupervised Hebbian STDP: had no notion of class labels and provided no benefit for continual learning.
+  2. Teacher-guided STDP with separate potentiation/depression traces - the two terms cancelled each other out, again providing no benefit.
   3. A self-referential spike threshold made the readout unstable.
-  4. Final design (below): a local delta rule (Widrow-Hoff), which is
-     stable, well understood, and still fully local (no backpropagation,
-     no gradient through time) -- consistent with "three-factor" local
+  4. # Final design: local Widrow Hoff delta rule with stable fully local learning. No backpropagation or backpropagation through time.
      learning rules used in the reward-modulated STDP / e-prop literature.
 """
 
@@ -47,13 +42,10 @@ class STDPLinear(nn.Module):
     def update(self, x, teacher_onehot, scale=1.0):
         """
         Local delta-rule update.
-
         Args:
-            x: (B, in_features) -- presynaptic activity (e.g. average
-               firing rate).
-            teacher_onehot: (B, out_features) -- correct label, one-hot.
-            scale: multiplier on the update magnitude. Used to make replay
-               updates gentler than current-task updates when desired.
+            x: (B, in_features) -- presynaptic activity (for example average firing rate).
+            teacher_onehot: (B, out_features) -- one hot encoded target labels.
+            scale: multiplier on the update magnitude. Used to make replay updates gentler than current-task updates when desired.
         """
         prediction = self.forward(x)
         error = teacher_onehot - prediction
