@@ -20,4 +20,4 @@ class BaselineSNN(nn.Module):
     def forward(self, x_seq):
         hidden_spikes = self.layer1(x_seq)
         out_spikes = self.layer2(hidden_spikes)
-        return out_spikes.sum(dim=0)  # spike count = output "rate"
+        return out_spikes.sum(dim=0)
