@@ -57,7 +57,7 @@ def evaluate(model, test_loaders, task_ids, is_hybrid):
 
 def train_continual(model, train_loaders, test_loaders, is_hybrid, tag, use_replay=False):
     """
-    Trains a model sequentially across all tasks in train_loaders, and
+    Trains a model sequentially across all tasks in train_loaders and
     evaluates it on all tasks seen so far after each task is trained.
 
     Returns:
@@ -87,9 +87,7 @@ def train_continual(model, train_loaders, test_loaders, is_hybrid, tag, use_repl
                 loss.backward()
                 optimizer.step()
 
-                # Replay: periodically re-expose the fast pathway to
-                # exemplars from earlier tasks. The slow pathway is
-                # unaffected.
+                # Replay: periodically re-expose the fast pathway to exemplars from earlier tasks. The slow pathway is  unaffected.
                 if is_hybrid and use_replay and exemplar_buffer and batch_idx % 5 == 0:
                     for buf_imgs, buf_labels in exemplar_buffer:
                         buf_imgs, buf_labels = buf_imgs.to(DEVICE), buf_labels.to(DEVICE)
@@ -118,9 +116,7 @@ def train_continual(model, train_loaders, test_loaders, is_hybrid, tag, use_repl
 
 def compute_forgetting(accuracy_matrix):
     """
-    Average forgetting: for each task (except the last), the drop in
-    accuracy between when it was first learned and after all tasks have
-    been trained.
+    Average forgetting: For each task except the last, it is the decrease in accuracy from initial learning to the end of training on all tasks.
     """
     n_tasks = len(accuracy_matrix)
     final_accs = accuracy_matrix[-1]
@@ -134,19 +130,14 @@ def compute_forgetting(accuracy_matrix):
 
 def compute_bwt(accuracy_matrix):
     """
-    Backward Transfer (BWT), a standard continual learning metric
-    (Lopez-Paz & Ranzato, 2017): BWT = average(Acc_final,i - Acc_i,i).
-    Negative BWT indicates forgetting; values closer to 0 are better.
-    Equivalent to -1 * average forgetting as defined above.
+    Backward Transfer (BWT), a standard continual learning metric(Lopez-Paz & Ranzato, 2017): BWT = average(Acc_final,i - Acc_i,i)..
     """
     return -compute_forgetting(accuracy_matrix)
 
 
 def diagnose_pathways(model, test_loaders, task_ids):
     """
-    Diagnostic: prints the slow and fast pathways' accuracy separately,
-    to identify which pathway is responsible for retaining or forgetting
-    a given task.
+    Diagnostic: prints the slow and fast pathways' accuracy separately to identify which pathway is responsible for retaining or forgetting a given task.
     """
     model.eval()
     print("\n[DIAGNOSTIC] Isolated pathway accuracy per task:")
