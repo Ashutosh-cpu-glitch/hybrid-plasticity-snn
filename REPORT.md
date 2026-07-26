@@ -77,7 +77,10 @@ To ensure statistical reliability, each variant was run across 5 random seeds ra
 - **Replay helps, as hypothesised:** removing replay increases forgetting from 0.549 to 0.614.
 - **Unexpected ablation finding:** removing the learned gate and using a fixed 50/50 combination produced statistically similar performance to the full model with a learned gate (0.514 vs 0.549). This suggests that the current scalar gate does not provide a clear improvement over a fixed combination weight. This remains an open question for future work and helps to identify which components contribute most to the observed performance.
 - **Variance across seeds is notably higher for the hybrid variants (std up to 0.17) than the baseline.** This indicates that the hybrid model improves continual learning on average but its performance still varies across random initializations. This limitation is discussed in Section 8.
-### 5.2 Single-run detailed results (illustrative run, forgetting = 0.7002 — the initial single run from Iteration 4 is shown in Table 1 to provide a detailed per task breakdown. Section 5.1 reports the final result based on the 5 seed evaluation.
+### 5.2 Single-run detailed results (illustrative run, forgetting = 0.7002)
+
+The initial single run from Iteration 4 is shown in Table 1 to provide a detailed per-task breakdown. This illustrative run was obtained during an earlier stage of development and is presented to explain the debugging process. The statistically reliable results are those reported in Section 5.1, which are based on the final 5-seed evaluation.
+
 **Baseline (backprop only):**
 
 | After training Task | Task 1 | Task 2 | Task 3 | Task 4 | Task 5 |
@@ -100,7 +103,8 @@ To ensure statistical reliability, each variant was run across 5 random seeds ra
 
 ![Task 1 Accuracy Trajectory](figures/fig5_task1_trajectory.png)
 
-The isolated pathway diagnostic below is measured on this same run. 
+The isolated pathway diagnostic below is measured on this same illustrative run.
+
 **Note:** this table reports the diagnostic accuracy of each pathway when evaluated independently. These results cannot be directly compared with the combined model because the final prediction is computed from the weighted sum of the output logits from both pathways.
 
 | Task | Slow-pathway-only accuracy (isolated) | Fast-pathway-only accuracy (isolated) |
@@ -115,7 +119,7 @@ The isolated pathway diagnostic below is measured on this same run.
 
 **On the Task 5 discrepancy (0% combined vs. 49.1% slow-only):** this explains why the accuracy of the individual pathways cannot be used to predict the accuracy of the combined model. The final prediction is computed from the combined output logits of both pathways rather than the prediction of either pathway alone. One possible explanation is that replay biases the fast pathway toward classes from earlier tasks. This may influence the final prediction when the logits from both pathways are combined. We did not directly analyze the logit distributions to verify this explanation. This remains a hypothesis and is left for future investigation. Addressing the scale mismatch between the two pathways is also left as future work and is discussed as a limitation.
 
-This confirms the mechanism directly: the slow (backprop) pathway forgets completely, exactly like the baseline. The fast (plasticity + replay) pathway is what carries forward memory of Task 1 — it retains 96.4% accuracy on Task 1 even after training on 4 subsequent tasks.
+These diagnostic results support the proposed mechanism. In this illustrative run, the slow (backprop) pathway forgets completely, exactly like the baseline. The fast (plasticity + replay) pathway carries forward memory of Task 1 by retaining 96.4% accuracy on Task 1 even after training on four subsequent tasks.
 
 ## 6. Observed Anomaly — Recency Bias
 
