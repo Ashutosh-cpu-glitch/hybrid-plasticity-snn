@@ -26,16 +26,6 @@ NUM_STEPS = 25  # number of timesteps in the encoded spike train
 
 
 def rate_encode(images, num_steps=NUM_STEPS):
-    """
-    Converts a static image into a Poisson-like spike train via rate
-    coding: higher pixel intensity -> higher spike probability per step.
-
-    Args:
-        images: (B, 784) tensor with values in [0, 1].
-
-    Returns:
-        (T, B, 784) binary spike tensor.
-    """
     images = images.unsqueeze(0).repeat(num_steps, 1, 1)
     return torch.bernoulli(images)
 
@@ -43,7 +33,7 @@ def rate_encode(images, num_steps=NUM_STEPS):
 def get_split_mnist_tasks(data_dir="./data", batch_size=128):
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Lambda(lambda x: x.view(-1))  # flatten 28x28 -> 784
+        transforms.Lambda(lambda x: x.view(-1)) 
     ])
 
     train_set = datasets.MNIST(data_dir, train=True, download=True, transform=transform)
